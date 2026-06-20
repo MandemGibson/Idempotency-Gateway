@@ -4,6 +4,7 @@ import type { IdempotencyRecord } from "../types/idempotency.type.js";
 
 export const processPayment = async (req: Request, res: Response) => {
   const { amount, currency } = req.body || {};
+  
   const idempotencyKey = (req as any).idempotencyKey;
   const currentPayloadHash = (req as any).currentPayloadHash;
 
@@ -31,6 +32,7 @@ export const processPayment = async (req: Request, res: Response) => {
   } catch (error) {
     idempotencyStore.delete(idempotencyKey);
     eventEmitter.emit(idempotencyKey, null);
+
     return res.status(500).json({
       success: false,
       message: "Internal server error",
