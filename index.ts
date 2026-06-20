@@ -21,18 +21,24 @@ const eventEmitter = new EventEmitter();
 const hashPayload = (payload: any) => {
   return crypto
     .createHash("sha256")
-    .update(JSON.stringify(payload))
+    .update(JSON.stringify(payload || {}))
     .digest("hex");
 };
 
 app.post("/process-payment", async (req, res) => {
   const idempotencyKey = req.header("Idempotency-Key");
-  const { amount, currency } = req.body;
+  const { amount, currency } = req.body || {};
 
   if (!idempotencyKey) {
     return res
       .status(400)
       .json({ success: false, message: "Idempotency-Key header is required" });
+  }
+
+  if (!amount || !currency) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Amount and currency are required" });
   }
 
   const currentPayloadHash = hashPayload(req.body);
